@@ -40,14 +40,14 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: 45,
-    borderColor: "#483D8B",
+    borderColor: "#34287d",
     borderWidth: 2,
     borderRadius: 5,
     paddingHorizontal: 10,
     marginRight: 10,
   },
   button: {
-    backgroundColor: "#483D8B",
+    backgroundColor: "#34287d",
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 5,

@@ -47,13 +47,10 @@ const App = () => {
       alert("Task title cannot be empty!");
       return;
     }
-    setTasks([
-      ...tasks,
-      { swipe: ">>", id: uuidv4(), title: value, completed: false },
-    ]);
+    setTasks([...tasks, { id: uuidv4(), title: value, completed: false }]);
     saveTasksToStorage([
       ...tasks,
-      { swipe: ">>", id: uuidv4(), title: value, completed: false },
+      { id: uuidv4(), title: value, completed: false },
     ]);
   };
 
@@ -94,12 +91,11 @@ const App = () => {
           style={styles.animation}
         >
           <View style={styles.row}>
-            {/* <Text style={styles.rowTextSwipe}>{item.swipe}</Text> */}
             <CheckBox
               checked={item.completed}
               onPress={() => toggleTaskCompletion(item.id)}
-              checkedColor="#483D8B"
-              uncheckedColor="#483D8B"
+              checkedColor="#34287d"
+              uncheckedColor="#34287d"
             />
             <Text style={styles.rowText}>{item.title}</Text>
             {/* Delete button */}
@@ -113,12 +109,11 @@ const App = () => {
   };
 
   // Header for the task table
-  const TableHeaderSchedules = () => {
+  const TableHeader = () => {
     return (
       <View style={styles.header}>
-        {/* <Text style={styles.headerText}>Swipe</Text> */}
         <Text style={styles.headerText}>Done</Text>
-        <Text style={styles.headerText2}>Task</Text>
+        <Text style={styles.headerTextTask}>Task</Text>
         <Text style={styles.headerText}>Action</Text>
       </View>
     );
@@ -134,23 +129,20 @@ const App = () => {
           <AddItem addTask={addTask} />
           {/* Section for pending tasks */}
           <Text style={styles.sectionTitle}>Pending Tasks</Text>
-
           <FlatList
             style={{ height: 150 }}
             data={tasks.filter((task) => !task.completed)}
             keyExtractor={(item) => item.id}
-            ListHeaderComponent={TableHeaderSchedules}
+            ListHeaderComponent={TableHeader}
             renderItem={renderTaskRow}
           />
-
           {/* Section for completed tasks */}
           <Text style={styles.sectionTitle}>Completed Tasks</Text>
-
           <FlatList
             style={{ height: 150 }}
             data={tasks.filter((task) => task.completed)}
             keyExtractor={(item) => item.id}
-            ListHeaderComponent={TableHeaderSchedules}
+            ListHeaderComponent={TableHeader}
             renderItem={renderTaskRow}
           />
         </SafeAreaView>
@@ -170,7 +162,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     justifyContent: "space-around",
-    backgroundColor: "#483D8B",
+    backgroundColor: "#34287d",
     height: 40,
     alignItems: "center",
   },
@@ -183,7 +175,7 @@ const styles = StyleSheet.create({
     minWidth: 90,
     maxWidth: 90,
   },
-  headerText2: {
+  headerTextTask: {
     fontSize: 16,
     fontWeight: "bold",
     flex: 1,
@@ -196,7 +188,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: "#483D8B",
+    borderBottomColor: "#34287d",
     backgroundColor: "#FFF",
   },
   rowText: {
@@ -213,7 +205,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     left: -5,
     borderWidth: 1,
-    borderColor: "#483D8B",
+    borderColor: "#34287d",
     borderRadius: 5,
     padding: 5,
   },
@@ -224,6 +216,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "flex-start",
     paddingHorizontal: 20,
+    borderWidth: 3,
+    borderColor: "#dedede",
   },
   swipeActionText: {
     color: "#FFF",
