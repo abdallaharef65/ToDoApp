@@ -19,6 +19,8 @@ import {
   Swipeable,
 } from "react-native-gesture-handler";
 
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+
 const App = () => {
   // State to store the list of tasks
   const [tasks, setTasks] = useState([]);
@@ -63,9 +65,12 @@ const App = () => {
 
   // Function to toggle task completion
   const toggleTaskCompletion = (id) => {
-    const updatedTasks = tasks.map((ele) =>
-      ele.id === id ? { ...ele, completed: !ele.completed } : ele
-    );
+    const filterItem = tasks.filter((i) => i.id == id);
+    const RemainingData = tasks.filter((i) => i.id != id);
+    var updatedTasks = [
+      ...RemainingData,
+      { ...filterItem[0], completed: !filterItem[0].completed },
+    ];
     setTasks(updatedTasks);
     saveTasksToStorage(updatedTasks);
   };
@@ -83,20 +88,26 @@ const App = () => {
         renderLeftActions={renderLeftActions}
         onSwipeableOpen={() => deleteTask(item.id)}
       >
-        <View style={styles.row}>
-          {/* <Text style={styles.rowTextSwipe}>{item.swipe}</Text> */}
-          <CheckBox
-            checked={item.completed}
-            onPress={() => toggleTaskCompletion(item.id)}
-            checkedColor="#483D8B"
-            uncheckedColor="#483D8B"
-          />
-          <Text style={styles.rowText}>{item.title}</Text>
-          {/* Delete button */}
-          <TouchableOpacity onPress={() => deleteTask(item.id)}>
-            <Text style={styles.deleteButton}>Delete</Text>
-          </TouchableOpacity>
-        </View>
+        <Animated.View
+          entering={FadeIn}
+          exiting={FadeOut}
+          style={styles.animation}
+        >
+          <View style={styles.row}>
+            {/* <Text style={styles.rowTextSwipe}>{item.swipe}</Text> */}
+            <CheckBox
+              checked={item.completed}
+              onPress={() => toggleTaskCompletion(item.id)}
+              checkedColor="#483D8B"
+              uncheckedColor="#483D8B"
+            />
+            <Text style={styles.rowText}>{item.title}</Text>
+            {/* Delete button */}
+            <TouchableOpacity onPress={() => deleteTask(item.id)}>
+              <Text style={styles.deleteButton}>Delete</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
       </Swipeable>
     );
   };
@@ -218,6 +229,13 @@ const styles = StyleSheet.create({
     color: "#FFF",
     fontWeight: "bold",
     fontSize: 16,
+  },
+  animation: {
+    backgroundColor: "lightgrey",
+    borderWidth: 0.5,
+    borderColor: "#d6d7da",
+    padding: 1,
+    marginVertical: 1,
   },
 });
 
