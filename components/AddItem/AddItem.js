@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    height: 40,
+    height: 45,
     borderColor: "#483D8B",
     borderWidth: 2,
     borderRadius: 5,
@@ -55,6 +55,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#FFFFFF",
     fontSize: 16,
+    fontWeight: "bold",
   },
 });
 

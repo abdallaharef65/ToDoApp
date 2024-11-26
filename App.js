@@ -6,9 +6,6 @@ import {
   FlatList,
   StyleSheet,
   TouchableOpacity,
-  LayoutAnimation,
-  UIManager,
-  Platform,
 } from "react-native";
 import Header from "./components/Header/Header"; // app title.
 import AddItem from "./components/AddItem/AddItem"; // new tasks.
@@ -17,6 +14,10 @@ import { CheckBox } from "react-native-elements"; // CheckBox component for mark
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid"; // Generates unique IDs for tasks.
+import {
+  GestureHandlerRootView,
+  Swipeable,
+} from "react-native-gesture-handler";
 
 const App = () => {
   // State to store the list of tasks
@@ -44,10 +45,13 @@ const App = () => {
       alert("Task title cannot be empty!");
       return;
     }
-    setTasks([...tasks, { id: uuidv4(), title: value, completed: false }]);
+    setTasks([
+      ...tasks,
+      { swipe: ">>", id: uuidv4(), title: value, completed: false },
+    ]);
     saveTasksToStorage([
       ...tasks,
-      { id: uuidv4(), title: value, completed: false },
+      { swipe: ">>", id: uuidv4(), title: value, completed: false },
     ]);
   };
 
@@ -66,31 +70,42 @@ const App = () => {
     saveTasksToStorage(updatedTasks);
   };
 
-  // Function to render each task row in the list
-  const renderTaskRow = ({ item }) => (
-    <View style={styles.row}>
-      {/* CheckBox to mark the task as completed or pending */}
-      <View style={{ width: 20 }}>
-        <CheckBox
-          checked={item.completed}
-          onPress={() => toggleTaskCompletion(item.id)}
-          checkedColor="#483D8B"
-          uncheckedColor="#483D8B"
-        />
+  // Function to render each task row in the list with Reanimated Swipeable
+  const renderTaskRow = ({ item }) => {
+    const renderLeftActions = () => (
+      <View style={styles.swipeActionContainer}>
+        <Text style={styles.swipeActionText}>Swipe to Delete</Text>
       </View>
-      {/* Task title */}
-      <Text style={styles.rowText}>{item.title}</Text>
-      {/* Delete button */}
-      <TouchableOpacity onPress={() => deleteTask(item.id)}>
-        <Text style={styles.deleteButton}>Delete</Text>
-      </TouchableOpacity>
-    </View>
-  );
+    );
+
+    return (
+      <Swipeable
+        renderLeftActions={renderLeftActions}
+        onSwipeableOpen={() => deleteTask(item.id)}
+      >
+        <View style={styles.row}>
+          {/* <Text style={styles.rowTextSwipe}>{item.swipe}</Text> */}
+          <CheckBox
+            checked={item.completed}
+            onPress={() => toggleTaskCompletion(item.id)}
+            checkedColor="#483D8B"
+            uncheckedColor="#483D8B"
+          />
+          <Text style={styles.rowText}>{item.title}</Text>
+          {/* Delete button */}
+          <TouchableOpacity onPress={() => deleteTask(item.id)}>
+            <Text style={styles.deleteButton}>Delete</Text>
+          </TouchableOpacity>
+        </View>
+      </Swipeable>
+    );
+  };
 
   // Header for the task table
   const TableHeaderSchedules = () => {
     return (
       <View style={styles.header}>
+        {/* <Text style={styles.headerText}>Swipe</Text> */}
         <Text style={styles.headerText}>Done</Text>
         <Text style={styles.headerText2}>Task</Text>
         <Text style={styles.headerText}>Action</Text>
@@ -99,41 +114,51 @@ const App = () => {
   };
 
   return (
-    <SafeAreaProvider>
-      <SafeAreaView style={styles.container}>
-        {/* App title */}
-        <Header title="To Do List" />
-        {/* Input to add tasks */}
-        <AddItem addTask={addTask} />
-        {/* Section for pending tasks */}
-        <Text style={styles.sectionTitle}>Pending Tasks</Text>
-        <FlatList
-          style={{ height: 150 }}
-          data={tasks.filter((i) => i.completed == false)}
-          keyExtractor={(item) => item.id}
-          ListHeaderComponent={TableHeaderSchedules}
-          renderItem={renderTaskRow}
-        />
-        {/* Section for completed tasks */}
-        <Text style={styles.sectionTitle}>Completed Tasks</Text>
-        <FlatList
-          style={{ height: 150 }}
-          data={tasks.filter((i) => i.completed == true)}
-          keyExtractor={(item) => item.id}
-          ListHeaderComponent={TableHeaderSchedules}
-          renderItem={renderTaskRow}
-        />
-      </SafeAreaView>
-    </SafeAreaProvider>
+    <GestureHandlerRootView>
+      <SafeAreaProvider>
+        <SafeAreaView style={styles.container}>
+          {/* App title */}
+          <Header title="To Do List" />
+          {/* Input to add tasks */}
+          <AddItem addTask={addTask} />
+          {/* Section for pending tasks */}
+          <Text style={styles.sectionTitle}>Pending Tasks</Text>
+
+          <FlatList
+            style={{ height: 150 }}
+            data={tasks.filter((task) => !task.completed)}
+            keyExtractor={(item) => item.id}
+            ListHeaderComponent={TableHeaderSchedules}
+            renderItem={renderTaskRow}
+          />
+
+          {/* Section for completed tasks */}
+          <Text style={styles.sectionTitle}>Completed Tasks</Text>
+
+          <FlatList
+            style={{ height: 150 }}
+            data={tasks.filter((task) => task.completed)}
+            keyExtractor={(item) => item.id}
+            ListHeaderComponent={TableHeaderSchedules}
+            renderItem={renderTaskRow}
+          />
+        </SafeAreaView>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 };
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f5f5f5", marginTop: 10 },
-  sectionTitle: { fontSize: 18, fontWeight: "bold", margin: 10 },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    backgroundColor: "#dedede",
+    padding: 10,
+  },
   header: {
     flexDirection: "row",
-    justifyContent: "flex-start",
+    justifyContent: "space-around",
     backgroundColor: "#483D8B",
     height: 40,
     alignItems: "center",
@@ -144,12 +169,15 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: "center",
     color: "#FFFFFF",
+    minWidth: 90,
+    maxWidth: 90,
   },
   headerText2: {
     fontSize: 16,
     fontWeight: "bold",
-    flex: 2,
+    flex: 1,
     textAlign: "center",
+    left: -55,
     color: "#FFFFFF",
   },
   row: {
@@ -158,12 +186,38 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderBottomWidth: 1,
     borderBottomColor: "#483D8B",
+    backgroundColor: "#FFF",
   },
-  rowText: { textAlign: "center", fontSize: 16, minWidth: 200, maxWidth: 200 },
+  rowText: {
+    alignItems: "center",
+    fontSize: 16,
+    minWidth: 150,
+    maxWidth: 150,
+    left: -5,
+  },
   deleteButton: {
-    color: "red",
+    backgroundColor: "#2e2752",
+    color: "#FFF",
     fontWeight: "bold",
     textAlign: "center",
+    left: -5,
+    borderWidth: 1,
+    borderColor: "#483D8B",
+    borderRadius: 5,
+    padding: 5,
+  },
+
+  swipeActionContainer: {
+    backgroundColor: "#2e2752",
+    justifyContent: "center",
+    flex: 1,
+    alignItems: "flex-start",
+    paddingHorizontal: 20,
+  },
+  swipeActionText: {
+    color: "#FFF",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });
 
